@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="23254924-d32f-4591-91ea-a8247d531604" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/DevHiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/config/CorsConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/config/JwtConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/config/WebConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/AuthController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/CommentController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/MembershipController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/NotificationController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/OrganizationController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/ProjectController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/SearchController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/SnippetController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/controller/TaskController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/auth/AuthResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/auth/LoginRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/auth/RegisterRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/codesnippet/CreateSnippetRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/codesnippet/SnippetCommentRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/codesnippet/SnippetCommentResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/codesnippet/SnippetResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/comment/CommentRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/comment/CommentResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/membership/MemberResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/membership/UpdateRoleRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/notification/NotificationMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/notification/NotificationResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/organization/CreateOrgRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/organization/InviteRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/organization/OrganizationResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/project/CreateProjectRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/project/ProjectResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/project/UpdateProjectRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/search/SearchResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/task/AssignTaskRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/task/CreateTaskRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/task/TaskResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/task/UpdateStatusRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/dto/task/UpdateTaskRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/CodeSnippet.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/Comment.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/Membership.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/Notification.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/Organization.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/Project.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/ProjectMember.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/SnippetComment.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/Task.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/entity/User.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/enums/Priority.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/enums/Role.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/enums/Status.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/exception/GlobalExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/exception/ResourceNotFoundException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/exception/UnauthorizedException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/mapper/CommentMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/mapper/NotificationMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/mapper/OrganizationMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/mapper/ProjectMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/mapper/SearchMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/mapper/SnippetMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/mapper/TaskMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/mapper/UserMapper.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/CodeSnippetRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/CommentRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/MembershipRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/NotificationRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/OrganizationRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/ProjectRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/SnippetCommentRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/TaskRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/respository/UserRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/security/JwtFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/security/JwtUtil.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/security/SecurityConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/security/UserPrincipal.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/AuthService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/CommentService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/CustomUserDetailsService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/MembershipService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/NotificationService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/OrganizationService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/ProjectService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/SearchService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/SnippetService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/service/TaskService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/websocket/NotificationPublisher.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/devhive/DevHive/websocket/WebSocketConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/devhive/DevHive/DevHiveApplicationTests.java" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CompilerWorkspaceConfiguration">
+    <option name="MAKE_PROJECT_ON_SAVE" value="true" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Suvalakshmi25&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Suvalakshmi25/DevHiveApp.git&quot;,
+    &quot;accountId&quot;: &quot;be84da18-1774-424a-8592-4a6d55addbb8&quot;
+  }
+}</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="3GSUcGj6OMhan5v0AsFX8nIIMTJ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "settings.editor.selected.configurable": "advanced.settings",
+    "to.speed.mode.migration.done": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.30387.90" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="23254924-d32f-4591-91ea-a8247d531604" name="Changes" comment="" />
+      <created>1783964544378</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1783964544378</updated>
+    </task>
+    <servers />
+  </component>
+</project>
