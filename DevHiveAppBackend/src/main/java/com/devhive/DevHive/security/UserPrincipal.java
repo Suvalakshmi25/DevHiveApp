@@ -15,6 +15,11 @@ public class UserPrincipal implements UserDetails {
     public UserPrincipal(User user) {
         this.user = user;
     }
+
+    public Long getUserId() {
+        return user.getId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (user.getMemberships() == null) return List.of();  // ← add this line

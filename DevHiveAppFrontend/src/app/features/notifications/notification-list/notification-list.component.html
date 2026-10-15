@@ -1,0 +1,14 @@
+<section class="feature-panel">
+  <div class="feature-heading">
+    <div><span class="eyebrow">UPDATES</span><h2>Notifications</h2></div>
+    <button class="button button-secondary" type="button" (click)="refresh.emit()">Refresh</button>
+  </div>
+  @for (notification of notifications(); track notification.id) {
+    <button class="notification-row" [class.unread]="!notification.read" type="button" (click)="markRead.emit(notification)">
+      <span>{{ notification.message }}</span>
+      <small>{{ notification.createdAt }} · {{ notification.read ? 'Read' : 'Mark as read' }}</small>
+    </button>
+  } @empty {
+    <p>No notifications.</p>
+  }
+</section>

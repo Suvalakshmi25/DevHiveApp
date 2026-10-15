@@ -28,6 +28,14 @@
               "src/styles.css"
             ],
             "server": "src/main.server.ts",
+            "allowedCommonJsDependencies": [
+              "sockjs-client",
+              "url-parse",
+              "inherits",
+              "debug",
+              "eventsource",
+              "faye-websocket"
+            ],
             "outputMode": "server",
             "security": {
               "allowedHosts": []

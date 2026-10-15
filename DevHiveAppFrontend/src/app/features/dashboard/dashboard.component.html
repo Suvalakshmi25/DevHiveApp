@@ -1,0 +1,251 @@
+<div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="DevHive home">
+        <span class="brand-mark"><span></span><span></span><span></span><span></span></span><span>devhive</span>
+      </a>
+
+      <div class="workspace-picker">
+        <span class="workspace-avatar">{{ (selectedOrganization?.name ?? 'D').slice(0, 1).toUpperCase() }}</span>
+        <label>
+          <small>WORKSPACE</small>
+          <select aria-label="Select organization" [ngModel]="selectedOrganizationId()" (ngModelChange)="selectOrganization($event)">
+            @for (organization of organizations(); track organization.id) {
+              <option [ngValue]="organization.id">{{ organization.name }}</option>
+            }
+          </select>
+        </label>
+        <span class="chevron" aria-hidden="true">⌄</span>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label-row"><span class="sidebar-label">WORKSPACE</span></div>
+        <button class="nav-item" [class.active]="activeSection() === 'overview'" type="button" (click)="openSection('overview')">
+          <span class="nav-icon grid-icon"><i></i><i></i><i></i><i></i></span><span>Overview</span>
+          <span class="nav-count">{{ tasks().length }}</span>
+        </button>
+        <button class="nav-item" [class.active]="activeSection() === 'members'" type="button" (click)="openSection('members')">
+          <span class="nav-icon">♧</span><span>Members</span>
+        </button>
+        <button class="nav-item" [class.active]="activeSection() === 'snippets'" type="button" (click)="openSection('snippets')">
+          <span class="nav-icon">&lt;/&gt;</span><span>Code snippets</span>
+        </button>
+        <button class="nav-item" [class.active]="activeSection() === 'notifications'" type="button" (click)="openSection('notifications')">
+          <span class="nav-icon">♢</span><span>Notifications</span>
+          @if (notifications().filter(notification => !notification.read).length) {
+            <span class="nav-count">{{ notifications().filter(notification => !notification.read).length }}</span>
+          }
+        </button>
+        <div class="project-label-row">
+          <span class="sidebar-label">PROJECTS</span>
+          @if (canAdminister) { <button class="icon-button add-project" type="button" aria-label="Create project" (click)="selectedOrganizationId() !== null ? openDialog('project') : openDialog('organization')">+</button> }
+        </div>
+        <app-project-list [projects]="projects()" [selectedProjectId]="selectedProjectId()" (selected)="selectProject($event)" />
+        <button class="nav-item muted-nav" type="button" (click)="openDialog('organization')">
+          <span class="nav-icon plus-outline">+</span><span>New organization</span>
+        </button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-tip">
+          <span class="tip-spark">✳</span>
+          <p><strong>Make it a team effort</strong><br>Create projects to keep everyone in sync.</p>
+          @if (canAdminister) { <button type="button" (click)="selectedOrganizationId() !== null ? openDialog('project') : openDialog('organization')">Get started <span>→</span></button> }
+        </div>
+        <button class="profile-button" type="button" (click)="logout()">
+          <span class="profile-avatar">{{ initials }}</span>
+          <span class="profile-copy"><strong>{{ userEmail }}</strong><small>Signed in to DevHive</small></span>
+          <span class="profile-menu" aria-hidden="true">···</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>Workspace</span><span class="crumb-slash">/</span><strong>{{ selectedProject?.name || 'Overview' }}</strong></div>
+        <div class="topbar-actions">
+          <label class="search-box">
+            <span class="search-icon" aria-hidden="true"></span>
+            <input type="search" [(ngModel)]="searchTerm" (ngModelChange)="searchBackend($event)" placeholder="Search tasks and snippets..." aria-label="Search tasks and snippets">
+            <kbd>⌘ K</kbd>
+          </label>
+          <span class="topbar-divider"></span>
+          <button class="help-button" type="button" title="Signed in to your workspace">?</button>
+          <span class="top-avatar">{{ initials }}</span>
+        </div>
+        @if (searchTerm.trim()) {
+          <div class="search-results" role="region" aria-label="Search results">
+            <strong>Search results</strong>
+            @for (result of searchResults(); track result.type + result.id) {
+              <button type="button" (click)="result.type === 'TASK' ? openSection('overview') : openSection('snippets')">
+                <span>{{ result.type === 'TASK' ? 'Task' : 'Snippet' }}</span>{{ result.title }}
+              </button>
+            } @empty {
+              <p>No matching tasks or snippets.</p>
+            }
+          </div>
+        }
+      </header>
+
+      <div class="page-wrap">
+        <app-project-detail
+          [project]="selectedProject ?? null"
+          [organizationSelected]="selectedOrganizationId() !== null"
+          [projectsCount]="projects().length"
+          [canAdminister]="canAdminister"
+          [canContribute]="canContribute"
+          (edit)="openEditProject()"
+          (delete)="deleteProject()"
+          (refresh)="loadTasks()"
+          (addTask)="openDialog('task')"
+          (createProject)="openDialog('project')"
+          (createOrganization)="openDialog('organization')" />
+
+        @if (errorMessage()) {
+          <div class="alert alert-error workspace-alert" role="alert"><span>!</span>{{ errorMessage() }}<button type="button" aria-label="Dismiss" (click)="errorMessage.set('')">×</button></div>
+        }
+        @if (successMessage()) {
+          <div class="toast-message" role="status"><span>✓</span>{{ successMessage() }}</div>
+        }
+
+        @if (activeSection() === 'overview') {
+        @if (organizations().length === 0) {
+          <section class="getting-started">
+            <div class="getting-icon"><span class="brand-mark"><span></span><span></span><span></span><span></span></span></div>
+            <span class="eyebrow">YOUR WORKSPACE STARTS HERE</span>
+            <h2>First, bring your team together.</h2>
+            <p>Create an organization for your team. Then add a project and start breaking work into tasks.</p>
+            <button class="button button-primary" type="button" (click)="openDialog('organization')">Create your organization <span>→</span></button>
+          </section>
+        } @else {
+          <section class="stats-grid" aria-label="Project summary">
+            <article class="stat-card">
+              <div class="stat-top"><span class="stat-label">TOTAL TASKS</span><span class="stat-icon stat-icon-violet">▤</span></div>
+              <div class="stat-number">{{ tasks().length }}<span class="stat-caption">in this project</span></div>
+              <div class="stat-foot"><span class="stat-accent">{{ projects().length }}</span> {{ projects().length === 1 ? 'project' : 'projects' }} in {{ selectedOrganization?.name || 'workspace' }}</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top"><span class="stat-label">IN PROGRESS</span><span class="stat-icon stat-icon-amber">◷</span></div>
+              <div class="stat-number">{{ inProgressCount }}<span class="stat-caption">active right now</span></div>
+              <div class="stat-foot"><span class="status-indicator indicator-progress"></span> Moving forward</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top"><span class="stat-label">COMPLETED</span><span class="stat-icon stat-icon-green">✓</span></div>
+              <div class="stat-number">{{ completedCount }}<span class="stat-caption">tasks finished</span></div>
+              <div class="stat-foot"><span class="stat-accent green-text">{{ completionPercent }}%</span> completion rate</div>
+            </article>
+            <article class="stat-card progress-stat">
+              <div class="stat-top"><span class="stat-label">PROJECT HEALTH</span><span class="stat-icon stat-icon-blue">↗</span></div>
+              <div class="health-line"><strong>{{ completionPercent }}%</strong><span>overall progress</span></div>
+              <div class="progress-track"><span [style.width.%]="completionPercent"></span></div>
+              <div class="stat-foot">Keep the momentum going</div>
+            </article>
+          </section>
+
+          <app-kanban-board
+            [tasks]="tasks()"
+            [members]="members()"
+            [statuses]="statuses"
+            [taskComments]="taskComments()"
+            [expandedComments]="expandedComments()"
+            [canContribute]="canContribute"
+            [canAdminister]="canAdminister"
+            [currentRole]="currentRole()"
+            [currentUserId]="currentUserId()"
+            [selectedProject]="!!selectedProject"
+            [projectsCount]="projects().length"
+            [searchTerm]="searchTerm"
+            (createTask)="openDialog('task')"
+            (createProject)="openDialog('project')"
+            (editTask)="openEditTask($event)"
+            (deleteTask)="deleteTask($event)"
+            (assignTask)="assignTask($event.task, $event.userId)"
+            (changeStatus)="changeStatus($event.task, $event.status)"
+            (toggleComments)="toggleTaskComments($event)"
+            (editComment)="editTaskComment($event.comment, $event.taskId)"
+            (deleteComment)="deleteTaskComment($event.commentId, $event.taskId)"
+            (addComment)="addTaskComment($event.taskId, $event.content)" />
+        }
+        <footer class="page-footer"><span>Made for teams that care about the details.</span><span>DEVHIVE <i></i> WORKSPACE</span></footer>
+        } @else if (activeSection() === 'members') {
+          <app-organization-members
+            [members]="members()"
+            [roles]="roles"
+            [canAdminister]="canAdminister"
+            (refresh)="loadMembers()"
+            (invite)="inviteMember($event.email, $event.role)"
+            (roleChange)="changeMemberRole($event.member, $event.role)"
+            (remove)="removeMember($event)" />
+        } @else if (activeSection() === 'snippets') {
+          <app-snippet-library
+            [snippets]="snippets()"
+            [selectedProject]="!!selectedProject"
+            [canContribute]="canContribute"
+            [snippetComments]="snippetComments()"
+            [commentDrafts]="snippetCommentDrafts"
+            (create)="openDialog('snippet')"
+            (toggleComments)="toggleSnippetComments($event)"
+            (addComment)="addSnippetComment($event.snippetId, $event.comment, $event.lineNumber)" />
+        } @else {
+          <app-notification-list
+            [notifications]="notifications()"
+            (refresh)="loadNotifications()"
+            (markRead)="markNotificationRead($event)" />
+        }
+      </div>
+    </main>
+  </div>
+@if (dialog()) {
+  <div class="modal-backdrop" (click)="closeDialog()">
+    <section class="modal-card" role="dialog" aria-modal="true" [attr.aria-labelledby]="'dialog-title'" (click)="$event.stopPropagation()">
+      <button class="modal-close" type="button" aria-label="Close dialog" (click)="closeDialog()">×</button>
+      <div class="modal-icon">{{ dialog() === 'task' || dialog() === 'edit-task' ? '✓' : dialog() === 'project' || dialog() === 'edit-project' ? '▧' : dialog() === 'snippet' ? 'CODE' : '✳' }}</div>
+      <span class="eyebrow">{{ dialog() === 'task' || dialog() === 'edit-task' ? 'KEEP THINGS MOVING' : dialog() === 'project' || dialog() === 'edit-project' ? 'MAKE IT HAPPEN' : dialog() === 'snippet' ? 'SHARE KNOWLEDGE' : 'BRING PEOPLE TOGETHER' }}</span>
+      <h2 id="dialog-title">{{ dialog() === 'task' ? 'Add a task' : dialog() === 'edit-task' ? 'Edit task' : dialog() === 'project' ? 'Create a project' : dialog() === 'edit-project' ? 'Edit project' : dialog() === 'snippet' ? 'Add a code snippet' : 'Create an organization' }}</h2>
+      <p class="modal-description">
+        {{ dialog() === 'task' || dialog() === 'edit-task' ? 'Capture and organize the work your team needs to do.' : dialog() === 'project' || dialog() === 'edit-project' ? 'Give your team a shared place to focus.' : dialog() === 'snippet' ? 'Save useful code with its language and context.' : 'Start a workspace for your team and projects.' }}
+      </p>
+      @if (errorMessage()) { <div class="alert alert-error" role="alert">{{ errorMessage() }}</div> }
+      @if (dialog() === 'organization') {
+        <form class="modal-form" (ngSubmit)="createOrganization()">
+          <label class="field"><span>Organization name</span><input name="organizationName" [(ngModel)]="organizationName" placeholder="e.g. Product team" required maxlength="100"></label>
+          <button class="button button-primary modal-submit" type="submit">Create organization <span>→</span></button>
+        </form>
+      } @else if (dialog() === 'project') {
+        <form class="modal-form" (ngSubmit)="createProject()">
+          <label class="field"><span>Project name</span><input name="projectName" [(ngModel)]="projectName" placeholder="e.g. Website refresh" required maxlength="100"></label>
+          <button class="button button-primary modal-submit" type="submit">Create project <span>→</span></button>
+        </form>
+      } @else if (dialog() === 'task') {
+        <form class="modal-form" (ngSubmit)="createTask()">
+          <label class="field"><span>Task name</span><input name="taskTitle" [(ngModel)]="taskDraft.title" placeholder="What needs to get done?" required maxlength="150"></label>
+          <label class="field"><span>Description <small>(optional)</small></span><textarea name="taskDescription" [(ngModel)]="taskDraft.description" placeholder="Add a little more context..." rows="3"></textarea></label>
+          <label class="field"><span>Priority</span><select name="taskPriority" [(ngModel)]="taskDraft.priority">
+            @for (priority of priorities; track priority) { <option [value]="priority">{{ priority }}</option> }
+          </select></label>
+          <button class="button button-primary modal-submit" type="submit">Add to board <span>→</span></button>
+        </form>
+      } @else if (dialog() === 'edit-task') {
+        <form class="modal-form" (ngSubmit)="saveTask()">
+          <label class="field"><span>Task name</span><input name="editTaskTitle" [(ngModel)]="taskEditDraft.title" required maxlength="150"></label>
+          <label class="field"><span>Description</span><textarea name="editTaskDescription" [(ngModel)]="taskEditDraft.description" rows="3"></textarea></label>
+          <label class="field"><span>Priority</span><select name="editTaskPriority" [(ngModel)]="taskEditDraft.priority">
+            @for (priority of priorities; track priority) { <option [value]="priority">{{ priority }}</option> }
+          </select></label>
+          <button class="button button-primary modal-submit" type="submit">Save task <span>→</span></button>
+        </form>
+      } @else if (dialog() === 'edit-project') {
+        <form class="modal-form" (ngSubmit)="saveProject()">
+          <label class="field"><span>Project name</span><input name="editProjectName" [(ngModel)]="projectEditName" required maxlength="100"></label>
+          <button class="button button-primary modal-submit" type="submit">Save project <span>→</span></button>
+        </form>
+      } @else if (dialog() === 'snippet') {
+        <form class="modal-form" (ngSubmit)="createSnippet()">
+          <label class="field"><span>Title</span><input name="snippetTitle" [(ngModel)]="snippetDraft.title" required maxlength="150"></label>
+          <label class="field"><span>Language</span><input name="snippetLanguage" [(ngModel)]="snippetDraft.language" required></label>
+          <label class="field"><span>Code</span><textarea name="snippetCode" [(ngModel)]="snippetDraft.code" rows="8" required></textarea></label>
+          <button class="button button-primary modal-submit" type="submit">Save snippet <span>→</span></button>
+        </form>
+      }
+    </section>
+  </div>
+}

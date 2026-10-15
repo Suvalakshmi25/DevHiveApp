@@ -1,0 +1,21 @@
+@if (errorMessage()) {
+  <app-alert [message]="errorMessage()" />
+}
+<form class="auth-form" (ngSubmit)="submit()">
+  <label class="field">
+    <span>Your name</span>
+    <input type="text" name="name" [(ngModel)]="details.name" placeholder="Alex Morgan" required minlength="2" autocomplete="name">
+  </label>
+  <label class="field">
+    <span>Email address</span>
+    <input type="email" name="email" [(ngModel)]="details.email" placeholder="you@company.com" required autocomplete="email">
+  </label>
+  <label class="field">
+    <span>Password</span>
+    <input type="password" name="password" [(ngModel)]="details.password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+  </label>
+  <button class="button button-primary auth-submit" type="submit" [disabled]="loading()">
+    {{ loading() ? 'Please wait...' : 'Create account' }}
+    @if (!loading()) { <span aria-hidden="true">→</span> }
+  </button>
+</form>

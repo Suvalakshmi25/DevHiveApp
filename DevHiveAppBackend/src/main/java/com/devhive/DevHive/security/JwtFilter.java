@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -42,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
         String header = request.getHeader("Authorization");
-        LOGGER.info("JwtFilter processing request {}, Authorization header present={}, headerValue={}", path, header != null, header != null ? header.substring(0, Math.min(header.length(), 30)) : "null");
+        LOGGER.debug("JwtFilter processing request {}, Authorization header present={}", path, header != null);
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7).trim();
@@ -53,7 +55,9 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 String email = jwtUtil.extractEmail(token);
                 boolean valid = false;
-                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                if (email != null && (authentication == null
+                        || authentication instanceof AnonymousAuthenticationToken)) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                     valid = jwtUtil.validateToken(token, email);
                     if (valid) {

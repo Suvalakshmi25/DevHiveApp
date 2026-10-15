@@ -2,7 +2,6 @@ package com.devhive.DevHive.service;
 
 import java.util.List;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.devhive.DevHive.dto.comment.CommentRequest;
@@ -10,11 +9,12 @@ import com.devhive.DevHive.dto.comment.CommentResponse;
 import com.devhive.DevHive.entity.Comment;
 import com.devhive.DevHive.entity.Task;
 import com.devhive.DevHive.entity.User;
+import com.devhive.DevHive.enums.Role;
 import com.devhive.DevHive.exception.ResourceNotFoundException;
+import com.devhive.DevHive.exception.UnauthorizedException;
 import com.devhive.DevHive.mapper.CommentMapper;
 import com.devhive.DevHive.respository.CommentRepository;
 import com.devhive.DevHive.respository.TaskRepository;
-import com.devhive.DevHive.respository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 @Service
@@ -23,8 +23,8 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
     private final CommentMapper commentMapper;
+    private final AuthorizationService authorizationService;
 
     // ➕ ADD COMMENT
     public CommentResponse addComment(Long taskId, CommentRequest request) {
@@ -32,8 +32,8 @@ public class CommentService {
             throw new IllegalArgumentException("Comment content is required");
         }
 
-        User user = getCurrentUser();
-
+        User user = authorizationService.currentUser();
+        authorizationService.requireTaskRole(taskId, Role.ADMIN, Role.DEVELOPER);
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
 
@@ -52,40 +52,13 @@ public class CommentService {
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
-
-        // access control disabled while auth is turned off
-        // if (!comment.getUser().getId().equals(currentUser.getId()) && !isAdmin(currentUser)) {
-        //     throw new UnauthorizedException("You are not allowed to delete this comment");
-        // }
+        authorizationService.requireTaskRole(comment.getTask().getId(), Role.ADMIN);
 
         commentRepository.delete(comment);
     }
 
-    // 🔍 GET CURRENT USER FROM JWT
-    private User getCurrentUser() {
-        org.springframework.security.core.Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getName() == null) {
-            return userRepository.findAll().stream()
-                    .findFirst()
-                    .orElseThrow(() -> new ResourceNotFoundException("User", "default", "no user found"));
-        }
-        return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", authentication.getName()));
-    }
-
-    // 🔐 CHECK ADMIN ROLE
-    private boolean isAdmin(User user) {
-        if (user == null || user.getMemberships() == null) {
-            return false;
-        }
-        return user.getMemberships().stream()
-                .anyMatch(m -> m.getRole() != null && m.getRole().name().equals("ADMIN"));
-    }
-
     public List<CommentResponse> getComments(Long taskId) {
-        taskRepository.findById(taskId)
-                .orElseThrow(() -> new ResourceNotFoundException("Task", "id", taskId));
+        authorizationService.requireTaskRole(taskId, Role.ADMIN, Role.DEVELOPER, Role.VIEWER);
 
         List<Comment> comments = commentRepository.findByTaskId(taskId);
 
@@ -101,11 +74,14 @@ public class CommentService {
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment", "id", commentId));
-
-        // access control disabled while auth is turned off
-        // if (!comment.getUser().getId().equals(currentUser.getId()) && !isAdmin(currentUser)) {
-        //     throw new UnauthorizedException("You are not allowed to update this comment");
-        // }
+        Task task = authorizationService.requireTaskRole(
+                comment.getTask().getId(), Role.ADMIN, Role.DEVELOPER);
+        var membership = authorizationService.requireOrganizationRole(
+                task.getProject().getOrganization().getId(), Role.ADMIN, Role.DEVELOPER);
+        if (membership.getRole() == Role.DEVELOPER
+                && !comment.getUser().getId().equals(membership.getUser().getId())) {
+            throw new UnauthorizedException("Developers can only edit their own comments");
+        }
 
         comment.setContent(request.getContent().trim());
         commentRepository.save(comment);

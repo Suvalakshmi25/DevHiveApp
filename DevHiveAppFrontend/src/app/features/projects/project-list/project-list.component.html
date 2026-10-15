@@ -1,0 +1,12 @@
+<div class="project-nav">
+  @for (project of projects(); track project.id) {
+    <button class="project-nav-item" [class.project-selected]="selectedProjectId() === project.id"
+      type="button" (click)="selected.emit(project)">
+      <span class="project-color" [class]="'project-color color-' + (project.id % 5)"></span>
+      <span class="project-nav-name">{{ project.name }}</span>
+      @if (selectedProjectId() === project.id) { <span class="project-active-dot"></span> }
+    </button>
+  } @empty {
+    <p class="sidebar-empty">No projects yet</p>
+  }
+</div>

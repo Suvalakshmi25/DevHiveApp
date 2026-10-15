@@ -34,4 +34,7 @@ public class Project {
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Task> tasks;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CodeSnippet> snippets;
 }

@@ -1,0 +1,32 @@
+<section class="feature-panel">
+  <div class="feature-heading">
+    <div><span class="eyebrow">TEAM ACCESS</span><h2>Organization members</h2></div>
+    <button class="button button-secondary" type="button" (click)="refresh.emit()">Refresh</button>
+  </div>
+  @if (canAdminister()) {
+    <form class="inline-form" (ngSubmit)="inviteMember()">
+      <input name="memberEmail" type="email" [(ngModel)]="email" placeholder="Existing DevHive user email" required>
+      <select name="memberRole" [(ngModel)]="role">
+        @for (item of roles(); track item) { <option [ngValue]="item">{{ item }}</option> }
+      </select>
+      <button class="button button-primary" type="submit">Invite member</button>
+    </form>
+    <p class="muted-copy">Invitations add an existing registered account to the selected organization.</p>
+  }
+  @for (member of members(); track member.userId) {
+    <div class="member-row">
+      <div><strong>{{ member.name }}</strong><small>{{ member.email }}</small></div>
+      @if (canAdminister()) {
+        <select [ngModel]="member.role" [name]="'member-role-' + member.userId"
+          (ngModelChange)="roleChange.emit({ member, role: $event })">
+          @for (item of roles(); track item) { <option [ngValue]="item">{{ item }}</option> }
+        </select>
+        <button class="button button-secondary" type="button" (click)="remove.emit(member)">Remove</button>
+      } @else {
+        <span class="member-role">{{ member.role }}</span>
+      }
+    </div>
+  } @empty {
+    <p>No members found for this organization.</p>
+  }
+</section>

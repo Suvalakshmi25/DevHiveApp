@@ -45,16 +45,10 @@ public class JwtUtil {
         try {
             String extractedEmail = extractEmail(token);
             boolean emailMatches = email.equals(extractedEmail);
-            LOGGER.info("validateToken: email={}, extractedEmail={}, emailMatches={}", email, extractedEmail, emailMatches);
-            
             boolean expired = isExpired(token);
-            LOGGER.info("validateToken: token expired={}", expired);
-            
-            boolean valid = emailMatches && !expired;
-            LOGGER.info("validateToken: final result={}", valid);
-            return valid;
+            return emailMatches && !expired;
         } catch (Exception ex) {
-            LOGGER.error("validateToken failed for email={}: {}", email, ex.getMessage(), ex);
+            LOGGER.warn("JWT validation failed: {}", ex.getClass().getSimpleName());
             return false;
         }
     }
@@ -65,17 +59,14 @@ public class JwtUtil {
 
     private Claims getClaims(String token) {
         try {
-            LOGGER.debug("getClaims: parsing token, length={}", token.length());
-            LOGGER.debug("getClaims: token starts with: {}", token.substring(0, Math.min(50, token.length())));
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8)))
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            LOGGER.info("getClaims: successfully parsed token, subject={}, expiration={}", claims.getSubject(), claims.getExpiration());
             return claims;
         } catch (Exception ex) {
-            LOGGER.error("getClaims: failed to parse token: {}", ex.getMessage(), ex);
+            LOGGER.warn("JWT parsing failed: {}", ex.getClass().getSimpleName());
             throw ex;
         }
     }

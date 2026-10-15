@@ -1,0 +1,29 @@
+<div class="page-heading">
+  <div>
+    <div class="date-kicker"><span class="live-dot"></span> YOUR TEAM WORKSPACE</div>
+    <h1>{{ project()?.name || 'Workspace overview' }}</h1>
+    <p class="page-subtitle">
+      @if (project()) { Here's what's happening with your project. }
+      @else if (projectsCount()) { Choose a project to see its tasks and progress. }
+      @else { A good place to start is your first project. }
+    </p>
+  </div>
+  <div class="heading-actions">
+    @if (project()) {
+      @if (canAdminister()) {
+        <button class="button button-secondary" type="button" (click)="edit.emit()">Edit project</button>
+        <button class="button button-secondary" type="button" (click)="delete.emit()">Delete project</button>
+      }
+      <button class="button button-secondary" type="button" (click)="refresh.emit()"><span class="refresh-icon">↻</span> Refresh</button>
+      @if (canContribute()) {
+        <button class="button button-primary" type="button" (click)="addTask.emit()"><span class="button-plus">+</span> Add task</button>
+      }
+    } @else if (organizationSelected()) {
+      @if (canAdminister()) {
+        <button class="button button-primary" type="button" (click)="createProject.emit()"><span class="button-plus">+</span> New project</button>
+      }
+    } @else {
+      <button class="button button-primary" type="button" (click)="createOrganization.emit()"><span class="button-plus">+</span> Create workspace</button>
+    }
+  </div>
+</div>

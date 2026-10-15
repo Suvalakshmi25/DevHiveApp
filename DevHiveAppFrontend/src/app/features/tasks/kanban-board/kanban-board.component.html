@@ -1,0 +1,65 @@
+<section class="board-section">
+  <div class="board-heading">
+    <div class="board-title"><h2>Task board</h2><span class="task-total">{{ visibleTasks.length }}</span></div>
+    <div class="board-tools"><span class="board-updated"><span class="status-indicator indicator-progress"></span> Live project view</span></div>
+  </div>
+
+  @if (selectedProject()) {
+    <div class="board-grid">
+      @for (status of statuses(); track status) {
+        <section class="board-column" [class]="'board-column column-' + status.toLowerCase()">
+          <header class="column-heading">
+            <span class="column-status-dot" [class]="'dot-' + status.toLowerCase()"></span>
+            <h3>{{ displayStatus(status) }}</h3>
+            <span class="column-count">{{ tasksIn(status).length }}</span>
+            @if (status === 'TODO' && canContribute()) {
+              <button class="column-add" type="button" aria-label="Add task" (click)="createTask.emit()">+</button>
+            }
+          </header>
+          <div class="task-list">
+            @for (task of tasksIn(status); track task.id) {
+              <app-task-card
+                [task]="task"
+                [members]="members()"
+                [statuses]="statuses()"
+                [comments]="taskComments()[task.id]"
+                [commentsExpanded]="!!expandedComments()[task.id]"
+                [canContribute]="canContribute()"
+                [canAdminister]="canAdminister()"
+                [currentRole]="currentRole()"
+                [currentUserId]="currentUserId()"
+                (editTask)="editTask.emit($event)"
+                (deleteTask)="deleteTask.emit($event)"
+                (assign)="assignTask.emit($event)"
+                (changeStatus)="changeStatus.emit($event)"
+                (toggleComments)="toggleComments.emit($event)"
+                (editComment)="editComment.emit($event)"
+                (deleteComment)="deleteComment.emit($event)"
+                (addComment)="addComment.emit($event)" />
+            } @empty {
+              <div class="column-empty">
+                <span class="empty-line"></span>
+                <p>{{ searchTerm() ? 'No matching tasks' : 'Nothing here yet' }}</p>
+                @if (!searchTerm() && status === 'TODO' && canContribute()) {
+                  <button type="button" (click)="createTask.emit()">Add a task <span>→</span></button>
+                }
+              </div>
+            }
+          </div>
+          @if (canContribute() && status === 'TODO' && visibleTasks.length > 0) {
+            <button class="add-task-inline" type="button" (click)="createTask.emit()"><span>+</span> Add task</button>
+          }
+        </section>
+      }
+    </div>
+  } @else {
+    <div class="project-empty">
+      <div class="project-empty-icon">▧</div>
+      <h3>{{ projectsCount() ? 'Select a project to get started' : 'Your first project is one click away' }}</h3>
+      <p>{{ projectsCount() ? 'Choose a project from the sidebar to see its task board.' : 'Projects keep your team’s goals and tasks together.' }}</p>
+      @if (!projectsCount() && canAdminister()) {
+        <button class="button button-primary" type="button" (click)="createProject.emit()">Create a project <span>→</span></button>
+      }
+    </div>
+  }
+</section>

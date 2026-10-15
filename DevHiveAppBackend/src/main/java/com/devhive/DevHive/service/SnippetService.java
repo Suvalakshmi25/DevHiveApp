@@ -2,7 +2,6 @@ package com.devhive.DevHive.service;
 
 import java.util.List;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.devhive.DevHive.dto.codesnippet.CreateSnippetRequest;
@@ -13,11 +12,11 @@ import com.devhive.DevHive.entity.CodeSnippet;
 import com.devhive.DevHive.entity.Project;
 import com.devhive.DevHive.entity.SnippetComment;
 import com.devhive.DevHive.entity.User;
+import com.devhive.DevHive.enums.Role;
+import com.devhive.DevHive.exception.ResourceNotFoundException;
 import com.devhive.DevHive.mapper.SnippetMapper;
 import com.devhive.DevHive.respository.CodeSnippetRepository;
-import com.devhive.DevHive.respository.ProjectRepository;
 import com.devhive.DevHive.respository.SnippetCommentRepository;
-import com.devhive.DevHive.respository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,15 +26,14 @@ public class SnippetService {
 
     private final CodeSnippetRepository snippetRepository;
     private final SnippetCommentRepository commentRepository;
-    private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
     private final SnippetMapper snippetMapper;
+    private final AuthorizationService authorizationService;
 
     public SnippetResponse createSnippet(CreateSnippetRequest request) {
 
-        User user = getCurrentUser();
-
-        Project project = projectRepository.findById(request.getProjectId()).orElseThrow();
+        Project project = authorizationService.requireProjectRole(
+                request.getProjectId(), Role.ADMIN, Role.DEVELOPER);
+        User user = authorizationService.currentUser();
 
         CodeSnippet snippet = CodeSnippet.builder()
                 .title(request.getTitle())
@@ -51,6 +49,7 @@ public class SnippetService {
     }
 
     public List<SnippetResponse> getSnippets(Long projectId) {
+        authorizationService.requireProjectRole(projectId, Role.ADMIN, Role.DEVELOPER, Role.VIEWER);
         return snippetRepository.findByProjectId(projectId).stream()
                 .map(snippetMapper::toResponse)
                 .toList();
@@ -58,9 +57,10 @@ public class SnippetService {
 
     public SnippetCommentResponse addComment(Long id, SnippetCommentRequest request) {
 
-        User user = getCurrentUser();
-
-        CodeSnippet snippet = snippetRepository.findById(id).orElseThrow();
+        authorizationService.requireSnippetRole(id, Role.ADMIN, Role.DEVELOPER);
+        User user = authorizationService.currentUser();
+        CodeSnippet snippet = snippetRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("CodeSnippet", "id", id));
 
         SnippetComment comment = SnippetComment.builder()
                 .snippet(snippet)
@@ -75,20 +75,10 @@ public class SnippetService {
     }
 
     public List<SnippetCommentResponse> getComments(Long id) {
+        authorizationService.requireSnippetRole(id, Role.ADMIN, Role.DEVELOPER, Role.VIEWER);
         return commentRepository.findBySnippetId(id).stream()
                 .map(snippetMapper::toCommentResponse)
                 .toList();
     }
 
-    private User getCurrentUser() {
-        org.springframework.security.core.Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getName() == null) {
-            return userRepository.findAll().stream()
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No default user found"));
-        }
-        return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found: " + authentication.getName()));
-    }
 }

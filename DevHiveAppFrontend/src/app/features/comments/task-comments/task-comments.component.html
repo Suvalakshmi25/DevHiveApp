@@ -1,0 +1,21 @@
+<button class="text-action" type="button" (click)="toggle.emit(taskId())">Comments ({{ comments()?.length ?? 'show' }})</button>
+@if (expanded()) {
+  <div class="comment-thread">
+    @for (comment of comments() ?? []; track comment.id) {
+      <p><strong>{{ comment.userName }}</strong> {{ comment.content }}
+        @if (canEditComment(comment)) {
+          <button type="button" (click)="edit.emit({ comment, taskId: taskId() })">Edit</button>
+        }
+        @if (canAdminister()) {
+          <button type="button" (click)="delete.emit({ commentId: comment.id, taskId: taskId() })">Delete</button>
+        }
+      </p>
+    }
+    @if (canContribute()) {
+      <form (ngSubmit)="submit()">
+        <input name="task-comment-{{ taskId() }}" [(ngModel)]="draft" placeholder="Add a comment" required>
+        <button type="submit">Send</button>
+      </form>
+    }
+  </div>
+}

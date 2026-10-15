@@ -1,0 +1,37 @@
+<article class="task-card">
+  <div class="task-card-top">
+    <span class="priority-tag" [class]="'priority-' + task().priority.toLowerCase()">
+      <span class="priority-mark"></span>{{ task().priority }}
+    </span>
+    @if (canContribute()) { <button class="task-menu" type="button" [attr.aria-label]="'Edit ' + task().title" title="Edit task" (click)="editTask.emit(task())">✎</button> }
+    @if (canAdminister()) { <button class="task-menu" type="button" [attr.aria-label]="'Delete ' + task().title" title="Delete task" (click)="deleteTask.emit(task())">×</button> }
+  </div>
+  <h4>{{ task().title }}</h4>
+  @if (task().description) { <p class="task-description">{{ task().description }}</p> }
+  <div class="task-card-footer">
+    <span class="task-id">#{{ task().id }}</span>
+    <select class="status-select" [ngModel]="task().assignedTo" [attr.aria-label]="'Assign ' + task().title" (ngModelChange)="assign.emit({ task: task(), userId: $event })" [disabled]="!canContribute() || members().length === 0">
+      @if (task().assignedTo === null) { <option [ngValue]="null" disabled>Unassigned</option> }
+      @for (member of members(); track member.userId) {
+        <option [ngValue]="member.userId">{{ member.name }}</option>
+      }
+    </select>
+    <select class="status-select" [ngModel]="task().status" [attr.aria-label]="'Change status for ' + task().title" (ngModelChange)="changeStatus.emit({ task: task(), status: $event })" [disabled]="!canContribute()">
+      @for (status of statuses(); track status) {
+        <option [ngValue]="status">{{ displayStatus(status) }}</option>
+      }
+    </select>
+  </div>
+  <app-task-comments
+    [taskId]="task().id"
+    [comments]="comments()"
+    [expanded]="commentsExpanded()"
+    [canContribute]="canContribute()"
+    [canAdminister]="canAdminister()"
+    [currentRole]="currentRole()"
+    [currentUserId]="currentUserId()"
+    (toggle)="toggleComments.emit($event)"
+    (edit)="editComment.emit($event)"
+    (delete)="deleteComment.emit($event)"
+    (add)="addComment.emit($event)" />
+</article>

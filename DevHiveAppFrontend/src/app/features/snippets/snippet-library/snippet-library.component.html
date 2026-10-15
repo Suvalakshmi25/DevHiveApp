@@ -1,0 +1,32 @@
+<section class="feature-panel">
+  <div class="feature-heading">
+    <div><span class="eyebrow">PROJECT LIBRARY</span><h2>Code snippets</h2></div>
+    @if (selectedProject() && canContribute()) {
+      <button class="button button-primary" type="button" (click)="create.emit()">Add snippet</button>
+    }
+  </div>
+  @if (!selectedProject()) { <p>Select a project to browse its snippets.</p> }
+  @for (snippet of snippets(); track snippet.id) {
+    <article class="snippet-card">
+      <div class="feature-heading">
+        <div><h3>{{ snippet.title }}</h3><span class="muted-copy">{{ snippet.language }}</span></div>
+        <button class="text-action" type="button" (click)="toggleComments.emit(snippet)">Comments</button>
+      </div>
+      <pre><code>{{ snippet.code }}</code></pre>
+      @if (snippetComments()[snippet.id]) {
+        @for (comment of snippetComments()[snippet.id]; track comment.id) {
+          <p class="snippet-comment"><strong>{{ comment.userName }}</strong> @if (comment.lineNumber) { (line {{ comment.lineNumber }}) } {{ comment.comment }}</p>
+        }
+        @if (canContribute()) {
+          <form class="inline-form" (ngSubmit)="submitComment(snippet.id)">
+            <input [name]="'snippet-comment-' + snippet.id" [(ngModel)]="commentDrafts()[snippet.id].comment" placeholder="Comment on this snippet" required>
+            <input type="number" min="1" [name]="'snippet-line-' + snippet.id" [(ngModel)]="commentDrafts()[snippet.id].lineNumber" placeholder="Line (optional)">
+            <button class="button button-secondary" type="submit">Comment</button>
+          </form>
+        }
+      }
+    </article>
+  } @empty {
+    @if (selectedProject()) { <p>No snippets in this project yet.</p> }
+  }
+</section>

@@ -2,7 +2,6 @@ package com.devhive.DevHive.service;
 
 import java.util.List;
 
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.devhive.DevHive.dto.membership.MemberResponse;
@@ -29,9 +28,10 @@ public class OrganizationService {
     private final UserRepository userRepository;
     private final MembershipRepository membershipRepository;
     private final OrganizationMapper organizationMapper;
+    private final AuthorizationService authorizationService;
 
     public OrganizationResponse createOrganization(CreateOrgRequest request) {
-        User user = getCurrentUser();
+        User user = authorizationService.currentUser();
 
         Organization org = Organization.builder()
                 .name(request.getName())
@@ -51,19 +51,14 @@ public class OrganizationService {
     }
 
     public List<OrganizationResponse> getUserOrganizations() {
-        User user = getCurrentUser();
+        User user = authorizationService.currentUser();
         return membershipRepository.findByUser(user).stream()
                 .map(m -> organizationMapper.toResponse(m.getOrganization()))
                 .toList();
     }
 
     public void inviteUser(Long orgId, InviteRequest request) {
-        User currentUser = getCurrentUser();
-
-        // access control disabled while auth is turned off
-        // if (!isAdmin(currentUser, orgId)) {
-        //     throw new UnauthorizedException("Only ADMIN can invite users");
-        // }
+        authorizationService.requireOrganizationRole(orgId, Role.ADMIN);
 
         Organization org = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ResourceNotFoundException("Organization", "id", orgId));
@@ -72,7 +67,10 @@ public class OrganizationService {
         User invitedUser = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", request.getEmail()));
 
-        // ✅ FIXED: use role from request, not hardcoded ADMIN
+        if (membershipRepository.findByUserIdAndOrganizationId(invitedUser.getId(), orgId).isPresent()) {
+            throw new IllegalArgumentException("User is already a member of this organization");
+        }
+
         Membership membership = Membership.builder()
                 .user(invitedUser)
                 .organization(org)
@@ -82,6 +80,7 @@ public class OrganizationService {
     }
 
     public List<MemberResponse> getMembers(Long orgId) {
+        authorizationService.requireOrganizationRole(orgId, Role.ADMIN, Role.DEVELOPER, Role.VIEWER);
         return membershipRepository.findByOrganizationId(orgId).stream()
                 .map(m -> MemberResponse.builder()
                         .userId(m.getUser().getId())
@@ -92,19 +91,4 @@ public class OrganizationService {
                 .toList();
     }
 
-    private User getCurrentUser() {
-        org.springframework.security.core.Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getName() == null) {
-            return userRepository.findAll().stream()
-                    .findFirst()
-                    .orElseThrow(() -> new ResourceNotFoundException("User", "default", "no user found"));
-        }
-        return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "email", authentication.getName()));
-    }
-
-    private boolean isAdmin(User user, Long orgId) {
-        return true;
-    }
 }

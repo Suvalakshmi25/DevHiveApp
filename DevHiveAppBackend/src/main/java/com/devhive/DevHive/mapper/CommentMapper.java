@@ -11,6 +11,7 @@ public class CommentMapper {
         return CommentResponse.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
+                .userId(comment.getUser().getId())
                 .userName(comment.getUser().getName())
                 .createdAt(comment.getCreatedAt().toString())
                 .build();

@@ -3,7 +3,6 @@ package com.devhive.DevHive.service;
 import java.util.List;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.devhive.DevHive.dto.notification.NotificationMessage;
@@ -11,9 +10,9 @@ import com.devhive.DevHive.dto.notification.NotificationResponse;
 import com.devhive.DevHive.entity.Notification;
 import com.devhive.DevHive.entity.Task;
 import com.devhive.DevHive.entity.User;
+import com.devhive.DevHive.exception.ResourceNotFoundException;
 import com.devhive.DevHive.mapper.NotificationMapper;
 import com.devhive.DevHive.respository.NotificationRepository;
-import com.devhive.DevHive.respository.UserRepository;
 import com.devhive.DevHive.websocket.NotificationPublisher;
 
 import lombok.RequiredArgsConstructor;
@@ -23,11 +22,11 @@ import lombok.RequiredArgsConstructor;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final UserRepository userRepository;
     private final NotificationMapper notificationMapper;
+    private final AuthorizationService authorizationService;
 
     public List<NotificationResponse> getNotifications() {
-        User user = getCurrentUser();
+        User user = authorizationService.currentUser();
 
         return notificationRepository.findByUser(user).stream()
                 .map(notificationMapper::toResponse)
@@ -35,21 +34,11 @@ public class NotificationService {
     }
 
     public void markAsRead(Long id) {
-        Notification notification = notificationRepository.findById(id).orElseThrow();
+        User user = authorizationService.currentUser();
+        Notification notification = notificationRepository.findByIdAndUserId(id, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Notification", "id", id));
         notification.setRead(true);
         notificationRepository.save(notification);
-    }
-
-    private User getCurrentUser() {
-        org.springframework.security.core.Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getName() == null) {
-            return userRepository.findAll().stream()
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("No default user found"));
-        }
-        return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found: " + authentication.getName()));
     }
     private final SimpMessagingTemplate messagingTemplate;
 
