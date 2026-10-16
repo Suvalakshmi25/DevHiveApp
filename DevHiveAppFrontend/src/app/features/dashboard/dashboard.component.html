@@ -6,15 +6,16 @@
 
       <div class="workspace-picker">
         <span class="workspace-avatar">{{ (selectedOrganization?.name ?? 'D').slice(0, 1).toUpperCase() }}</span>
-        <label>
+        <div class="workspace-picker-copy">
           <small>WORKSPACE</small>
-          <select aria-label="Select organization" [ngModel]="selectedOrganizationId()" (ngModelChange)="selectOrganization($event)">
-            @for (organization of organizations(); track organization.id) {
-              <option [ngValue]="organization.id">{{ organization.name }}</option>
-            }
-          </select>
-        </label>
-        <span class="chevron" aria-hidden="true">⌄</span>
+          <app-styled-select
+            id="workspace-organization"
+            label="Select organization"
+            [options]="organizationOptions()"
+            [value]="selectedOrganizationId()"
+            [disabled]="organizations().length < 2"
+            (valueChange)="selectOrganization($event)" />
+        </div>
       </div>
 
       <div class="sidebar-section">
@@ -51,10 +52,10 @@
           <p><strong>Make it a team effort</strong><br>Create projects to keep everyone in sync.</p>
           @if (canAdminister) { <button type="button" (click)="selectedOrganizationId() !== null ? openDialog('project') : openDialog('organization')">Get started <span>→</span></button> }
         </div>
-        <button class="profile-button" type="button" (click)="logout()">
+        <button class="profile-button" type="button" aria-label="Log out" (click)="logout()">
           <span class="profile-avatar">{{ initials }}</span>
           <span class="profile-copy"><strong>{{ userEmail }}</strong><small>Signed in to DevHive</small></span>
-          <span class="profile-menu" aria-hidden="true">···</span>
+          <span class="profile-logout">Log out</span>
         </button>
       </div>
     </aside>
@@ -117,6 +118,39 @@
             <button class="button button-primary" type="button" (click)="openDialog('organization')">Create your organization <span>→</span></button>
           </section>
         } @else {
+          @if (projects().length === 0 || tasks().length === 0) {
+            <section class="onboarding-guide" aria-labelledby="onboarding-title">
+              <div>
+                <span class="eyebrow">A QUICK START</span>
+                <h2 id="onboarding-title">Your workspace, one step at a time</h2>
+                <p>Set up a project and add a task to give your team a clear place to begin.</p>
+              </div>
+              <div class="onboarding-steps">
+                <div class="onboarding-step complete">
+                  <span class="onboarding-step-number" aria-hidden="true">✓</span>
+                  <span><strong>Create an organization</strong><small>Your team has a shared workspace.</small></span>
+                </div>
+                <div class="onboarding-step" [class.complete]="projects().length > 0">
+                  <span class="onboarding-step-number" aria-hidden="true">{{ projects().length > 0 ? '✓' : '2' }}</span>
+                  <span><strong>Create a project</strong><small>{{ canAdminister ? 'Keep related work together.' : 'Ask an admin to create the first project.' }}</small></span>
+                  @if (projects().length === 0) {
+                    @if (canAdminister) {
+                      <button class="onboarding-action" type="button" (click)="openDialog('project')">Create project <span aria-hidden="true">→</span></button>
+                    }
+                  }
+                </div>
+                <div class="onboarding-step" [class.complete]="tasks().length > 0" [class.disabled]="projects().length === 0">
+                  <span class="onboarding-step-number" aria-hidden="true">{{ tasks().length > 0 ? '✓' : '3' }}</span>
+                  <span><strong>Add your first task</strong><small>{{ canContribute ? 'Turn your next goal into an actionable task.' : 'Ask a teammate to add the first task.' }}</small></span>
+                  @if (tasks().length === 0) {
+                    @if (canContribute) {
+                      <button class="onboarding-action" type="button" [disabled]="projects().length === 0" (click)="openDialog('task')">Add task <span aria-hidden="true">→</span></button>
+                    }
+                  }
+                </div>
+              </div>
+            </section>
+          }
           <section class="stats-grid" aria-label="Project summary">
             <article class="stat-card">
               <div class="stat-top"><span class="stat-label">TOTAL TASKS</span><span class="stat-icon stat-icon-violet">▤</span></div>
@@ -169,8 +203,10 @@
         } @else if (activeSection() === 'members') {
           <app-organization-members
             [members]="members()"
-            [roles]="roles"
+            [roleOptions]="roleOptions"
             [canAdminister]="canAdminister"
+            [busyMemberIds]="busyMemberIds()"
+            [inviteStatus]="inviteStatus()"
             (refresh)="loadMembers()"
             (invite)="inviteMember($event.email, $event.role)"
             (roleChange)="changeMemberRole($event.member, $event.role)"
@@ -219,18 +255,14 @@
         <form class="modal-form" (ngSubmit)="createTask()">
           <label class="field"><span>Task name</span><input name="taskTitle" [(ngModel)]="taskDraft.title" placeholder="What needs to get done?" required maxlength="150"></label>
           <label class="field"><span>Description <small>(optional)</small></span><textarea name="taskDescription" [(ngModel)]="taskDraft.description" placeholder="Add a little more context..." rows="3"></textarea></label>
-          <label class="field"><span>Priority</span><select name="taskPriority" [(ngModel)]="taskDraft.priority">
-            @for (priority of priorities; track priority) { <option [value]="priority">{{ priority }}</option> }
-          </select></label>
+          <label class="field"><span>Priority</span><app-styled-select id="task-priority" label="Task priority" [options]="priorityOptions" [value]="taskDraft.priority" (valueChange)="taskDraft.priority = $event" /></label>
           <button class="button button-primary modal-submit" type="submit">Add to board <span>→</span></button>
         </form>
       } @else if (dialog() === 'edit-task') {
         <form class="modal-form" (ngSubmit)="saveTask()">
           <label class="field"><span>Task name</span><input name="editTaskTitle" [(ngModel)]="taskEditDraft.title" required maxlength="150"></label>
           <label class="field"><span>Description</span><textarea name="editTaskDescription" [(ngModel)]="taskEditDraft.description" rows="3"></textarea></label>
-          <label class="field"><span>Priority</span><select name="editTaskPriority" [(ngModel)]="taskEditDraft.priority">
-            @for (priority of priorities; track priority) { <option [value]="priority">{{ priority }}</option> }
-          </select></label>
+          <label class="field"><span>Priority</span><app-styled-select id="edit-task-priority" label="Task priority" [options]="priorityOptions" [value]="taskEditDraft.priority" (valueChange)="taskEditDraft.priority = $event" /></label>
           <button class="button button-primary modal-submit" type="submit">Save task <span>→</span></button>
         </form>
       } @else if (dialog() === 'edit-project') {

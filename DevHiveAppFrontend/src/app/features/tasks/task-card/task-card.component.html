@@ -10,17 +10,22 @@
   @if (task().description) { <p class="task-description">{{ task().description }}</p> }
   <div class="task-card-footer">
     <span class="task-id">#{{ task().id }}</span>
-    <select class="status-select" [ngModel]="task().assignedTo" [attr.aria-label]="'Assign ' + task().title" (ngModelChange)="assign.emit({ task: task(), userId: $event })" [disabled]="!canContribute() || members().length === 0">
-      @if (task().assignedTo === null) { <option [ngValue]="null" disabled>Unassigned</option> }
-      @for (member of members(); track member.userId) {
-        <option [ngValue]="member.userId">{{ member.name }}</option>
-      }
-    </select>
-    <select class="status-select" [ngModel]="task().status" [attr.aria-label]="'Change status for ' + task().title" (ngModelChange)="changeStatus.emit({ task: task(), status: $event })" [disabled]="!canContribute()">
-      @for (status of statuses(); track status) {
-        <option [ngValue]="status">{{ displayStatus(status) }}</option>
-      }
-    </select>
+    <app-styled-select
+      class="status-dropdown assignment-dropdown"
+      [id]="'task-assignee-' + task().id"
+      [label]="'Assign ' + task().title"
+      [options]="memberOptions()"
+      [value]="task().assignedTo"
+      [disabled]="!canContribute() || members().length === 0"
+      (valueChange)="assign.emit({ task: task(), userId: $event })" />
+    <app-styled-select
+      class="status-dropdown"
+      [id]="'task-status-' + task().id"
+      [label]="'Change status for ' + task().title"
+      [options]="statusOptions()"
+      [value]="task().status"
+      [disabled]="!canContribute()"
+      (valueChange)="changeStatus.emit({ task: task(), status: $event })" />
   </div>
   <app-task-comments
     [taskId]="task().id"

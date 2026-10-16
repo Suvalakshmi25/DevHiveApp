@@ -7,7 +7,6 @@ import org.springframework.web.servlet.config.annotation.*;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    // 🌍 CORS Configuration (Angular ↔ Spring Boot)
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")

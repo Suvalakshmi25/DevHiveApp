@@ -1,13 +1,13 @@
-import { Component, input, output } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, computed, input, output } from '@angular/core';
 import {
   Member, MemberRole, Task, TaskComment, TaskStatus
 } from '../../../shared/models/workspace.models';
 import { TaskCommentsComponent } from '../../comments/task-comments/task-comments.component';
+import { SelectOption, StyledSelectComponent } from '../../../shared/components/styled-select/styled-select.component';
 
 @Component({
   selector: 'app-task-card',
-  imports: [FormsModule, TaskCommentsComponent],
+  imports: [TaskCommentsComponent, StyledSelectComponent],
   templateUrl: './task-card.component.html'
 })
 export class TaskCardComponent {
@@ -20,6 +20,13 @@ export class TaskCardComponent {
   readonly canAdminister = input(false);
   readonly currentRole = input<MemberRole | null>(null);
   readonly currentUserId = input<number | null>(null);
+  readonly memberOptions = computed<SelectOption<number | null>[]>(() => [
+    { label: 'Unassigned', value: null },
+    ...this.members().map(member => ({ label: member.name, value: member.userId }))
+  ]);
+  readonly statusOptions = computed<SelectOption<TaskStatus>[]>(() =>
+    this.statuses().map(status => ({ label: this.displayStatus(status), value: status }))
+  );
 
   readonly editTask = output<Task>();
   readonly deleteTask = output<Task>();

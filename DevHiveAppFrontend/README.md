@@ -1,59 +1,64 @@
-# DevHiveAppFrontend
+# DevHive
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.16.
+DevHive is a team workspace for organizations, projects, tasks, members, code snippets, and notifications. The frontend is an Angular application; the backend is a Spring Boot API backed by MySQL.
 
-## Development server
+## Prerequisites
 
-To start a local development server, run:
+- Node.js and npm
+- Java 21
+- MySQL
 
-```bash
-ng serve
+## Local development setup
+
+### 1. Configure and start the backend
+
+Create the `devhive` database in MySQL:
+
+```sql
+CREATE DATABASE devhive;
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+In PowerShell, open a terminal in `DevHiveAppBackend`, set the required environment variables, then start Spring Boot:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```powershell
+$env:DB_USERNAME = "your-mysql-user"
+$env:DB_PASSWORD = "your-mysql-password"
+$keyBytes = New-Object byte[] 48
+[Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($keyBytes)
+$env:JWT_SECRET = [Convert]::ToBase64String($keyBytes)
+.\mvnw.cmd spring-boot:run
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Keep the same `JWT_SECRET` across restarts. Generating a new one invalidates existing login tokens. The API listens on `http://localhost:8080`; Hibernate creates or updates the tables in the database.
 
-```bash
-ng generate --help
+See [the backend README](../DevHiveAppBackend/README.md) for all backend configuration options, test commands, and secret-rotation guidance.
+
+### 2. Install and start the frontend
+
+In a separate terminal, open `DevHiveAppFrontend` and run:
+
+```powershell
+npm ci
+npm start
 ```
 
-## Building
+Open [http://localhost:4200](http://localhost:4200). The frontend uses the local API at `http://localhost:8080`; the backend allows requests from the local Angular development server.
 
-To build the project run:
+## Common commands
 
-```bash
-ng build
+Run these from `DevHiveAppFrontend`:
+
+```powershell
+npm run build
+npm test -- --watch=false
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Run backend tests from `DevHiveAppBackend` after setting the required database and JWT environment variables in that terminal:
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
+```powershell
+.\mvnw.cmd test
 ```
 
-## Running end-to-end tests
+## Security
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Do not commit database credentials or JWT signing keys. If a credential or signing key was previously committed, treat it as exposed and rotate it. Never paste secrets into issues, chat, or source files.

@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { afterNextRender, Component, inject, PLATFORM_ID, signal } from '@angular/core';
+import { afterNextRender, Component, computed, inject, PLATFORM_ID, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   CodeSnippet, Member, MemberRole, Notification, Organization, Priority, Project, SearchResult,
@@ -15,6 +15,7 @@ import { NotificationListComponent } from '../notifications/notification-list/no
 import { KanbanBoardComponent } from '../tasks/kanban-board/kanban-board.component';
 import { ProjectListComponent } from '../projects/project-list/project-list.component';
 import { ProjectDetailComponent } from '../projects/project-detail/project-detail.component';
+import { SelectOption, StyledSelectComponent } from '../../shared/components/styled-select/styled-select.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,7 +26,8 @@ import { ProjectDetailComponent } from '../projects/project-detail/project-detai
     SnippetLibraryComponent,
     NotificationListComponent,
     ProjectListComponent,
-    ProjectDetailComponent
+    ProjectDetailComponent,
+    StyledSelectComponent
   ],
   templateUrl: './dashboard.component.html'
 })
@@ -42,6 +44,8 @@ export class DashboardComponent {
   readonly selectedProjectId = signal<number | null>(null);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
+  readonly busyMemberIds = signal<number[]>([]);
+  readonly inviteStatus = signal<'idle' | 'pending' | 'success'>('idle');
   readonly dialog = signal<'organization' | 'project' | 'task' | 'edit-task' | 'edit-project' | 'snippet' | null>(null);
   readonly activeSection = signal<'overview' | 'members' | 'snippets' | 'notifications'>('overview');
   readonly members = signal<Member[]>([]);
@@ -54,6 +58,10 @@ export class DashboardComponent {
   readonly snippetComments = signal<Partial<Record<number, SnippetComment[]>>>({});
   readonly expandedComments = signal<Record<number, boolean>>({});
   readonly roles: MemberRole[] = ['ADMIN', 'DEVELOPER', 'VIEWER'];
+  readonly organizationOptions = computed<SelectOption<number>[]>(() =>
+    this.organizations().map(organization => ({ label: organization.name, value: organization.id }))
+  );
+  readonly roleOptions: SelectOption<MemberRole>[] = this.roles.map(role => ({ label: role, value: role }));
 
   searchTerm = '';
   organizationName = '';
@@ -69,6 +77,7 @@ export class DashboardComponent {
 
   readonly statuses: TaskStatus[] = ['TODO', 'IN_PROGRESS', 'DONE'];
   readonly priorities: Priority[] = ['LOW', 'MEDIUM', 'HIGH'];
+  readonly priorityOptions: SelectOption<Priority>[] = this.priorities.map(priority => ({ label: priority, value: priority }));
 
   constructor() {
     afterNextRender(() => {
@@ -395,32 +404,45 @@ export class DashboardComponent {
     if (!this.canAdminister) return;
     const organizationId = this.selectedOrganizationId();
     if (organizationId === null) return;
+    this.inviteStatus.set('pending');
     this.workspace.inviteMember(organizationId, email, role).subscribe({
       next: () => {
         this.loadMembers();
         this.showMessage('Member invited.');
+        this.inviteStatus.set('success');
       },
-      error: error => this.handleError(error)
+      error: error => {
+        this.inviteStatus.set('idle');
+        this.handleError(error);
+      }
     });
   }
 
   changeMemberRole(member: Member, role: MemberRole): void {
     if (!this.canAdminister) return;
     const organizationId = this.selectedOrganizationId();
-    if (organizationId === null || member.role === role) return;
+    if (organizationId === null || member.role === role || this.busyMemberIds().includes(member.userId)) return;
+    this.setMemberBusy(member.userId, true);
     this.workspace.updateMemberRole(organizationId, member.userId, role).subscribe({
       next: () => {
         this.members.update(items => items.map(item => item.userId === member.userId ? { ...item, role } : item));
         if (member.userId === this.currentUserId()) this.currentRole.set(role);
+        this.showMessage(`${member.name}'s role updated.`);
+        this.setMemberBusy(member.userId, false);
       },
-      error: error => this.handleError(error)
+      error: error => {
+        this.setMemberBusy(member.userId, false);
+        this.handleError(error);
+      }
     });
   }
 
   removeMember(member: Member): void {
     if (!this.canAdminister) return;
     const organizationId = this.selectedOrganizationId();
-    if (organizationId === null || !isPlatformBrowser(this.platformId) || !window.confirm(`Remove ${member.name} from this organization?`)) return;
+    if (organizationId === null || this.busyMemberIds().includes(member.userId) ||
+        !isPlatformBrowser(this.platformId) || !window.confirm(`Remove ${member.name} from this organization?`)) return;
+    this.setMemberBusy(member.userId, true);
     this.workspace.removeMember(organizationId, member.userId).subscribe({
       next: () => {
         this.members.update(items => items.filter(item => item.userId !== member.userId));
@@ -428,8 +450,13 @@ export class DashboardComponent {
           this.currentRole.set(null);
           this.currentUserId.set(null);
         }
+        this.showMessage(`${member.name} was removed from the organization.`);
+        this.setMemberBusy(member.userId, false);
       },
-      error: error => this.handleError(error)
+      error: error => {
+        this.setMemberBusy(member.userId, false);
+        this.handleError(error);
+      }
     });
   }
 
@@ -535,9 +562,9 @@ export class DashboardComponent {
     });
   }
 
-  logout(): void {
+  logout(notice = ''): void {
     this.websocket.disconnect();
-    this.auth.logout();
+    this.auth.logout(notice);
     this.organizations.set([]);
     this.projects.set([]);
     this.tasks.set([]);
@@ -548,11 +575,16 @@ export class DashboardComponent {
     this.selectedProjectId.set(null);
   }
 
+  private setMemberBusy(userId: number, busy: boolean): void {
+    this.busyMemberIds.update(ids => busy
+      ? ids.includes(userId) ? ids : [...ids, userId]
+      : ids.filter(id => id !== userId));
+  }
+
   private handleError(error: unknown): void {
     const response = error as HttpErrorResponse;
     if (response.status === 401) {
-      this.logout();
-      this.errorMessage.set('Your session has expired. Please sign in again.');
+      this.logout('Your session has expired. Please sign in again.');
     } else if (response.status === 403) {
       this.errorMessage.set('Your organization role does not allow that action.');
     } else if (response.status === 0) {

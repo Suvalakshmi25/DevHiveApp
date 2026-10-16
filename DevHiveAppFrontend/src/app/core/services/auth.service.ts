@@ -11,6 +11,8 @@ export class AuthService {
   private readonly apiUrl = 'http://localhost:8080/api/auth';
   readonly token = signal('');
   readonly userEmail = signal('');
+  readonly initialized = signal(false);
+  readonly logoutNotice = signal('');
 
   constructor() {
     afterNextRender(() => {
@@ -18,6 +20,7 @@ export class AuthService {
         this.token.set(localStorage.getItem('devhive-token') ?? '');
         this.userEmail.set(localStorage.getItem('devhive-email') ?? '');
       }
+      this.initialized.set(true);
     });
   }
 
@@ -26,6 +29,7 @@ export class AuthService {
       tap(response => {
         this.token.set(response.token);
         this.userEmail.set(credentials.email);
+        this.logoutNotice.set('');
         if (isPlatformBrowser(this.platformId)) {
           localStorage.setItem('devhive-token', response.token);
           localStorage.setItem('devhive-email', credentials.email);
@@ -38,12 +42,13 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/register`, details, { responseType: 'text' });
   }
 
-  logout(): void {
+  logout(notice = ''): void {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('devhive-token');
       localStorage.removeItem('devhive-email');
     }
     this.token.set('');
     this.userEmail.set('');
+    this.logoutNotice.set(notice);
   }
 }

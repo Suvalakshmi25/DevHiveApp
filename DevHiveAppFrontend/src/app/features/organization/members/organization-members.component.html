@@ -6,10 +6,17 @@
   @if (canAdminister()) {
     <form class="inline-form" (ngSubmit)="inviteMember()">
       <input name="memberEmail" type="email" [(ngModel)]="email" placeholder="Existing DevHive user email" required>
-      <select name="memberRole" [(ngModel)]="role">
-        @for (item of roles(); track item) { <option [ngValue]="item">{{ item }}</option> }
-      </select>
-      <button class="button button-primary" type="submit">Invite member</button>
+      <app-styled-select
+        class="member-role-select"
+        id="invite-member-role"
+        label="Role for invited member"
+        [options]="roleOptions()"
+        [value]="role"
+        [disabled]="inviteStatus() === 'pending'"
+        (valueChange)="role = $event" />
+      <button class="button button-primary" type="submit" [disabled]="inviteStatus() === 'pending'">
+        {{ inviteStatus() === 'pending' ? 'Inviting…' : 'Invite member' }}
+      </button>
     </form>
     <p class="muted-copy">Invitations add an existing registered account to the selected organization.</p>
   }
@@ -17,11 +24,17 @@
     <div class="member-row">
       <div><strong>{{ member.name }}</strong><small>{{ member.email }}</small></div>
       @if (canAdminister()) {
-        <select [ngModel]="member.role" [name]="'member-role-' + member.userId"
-          (ngModelChange)="roleChange.emit({ member, role: $event })">
-          @for (item of roles(); track item) { <option [ngValue]="item">{{ item }}</option> }
-        </select>
-        <button class="button button-secondary" type="button" (click)="remove.emit(member)">Remove</button>
+        <app-styled-select
+          class="member-role-select"
+          [id]="'member-role-' + member.userId"
+          [label]="'Role for ' + member.name"
+          [options]="roleOptions()"
+          [value]="member.role"
+          [disabled]="busyMemberIds().includes(member.userId)"
+          (valueChange)="roleChange.emit({ member, role: $event })" />
+        <button class="button button-secondary" type="button" [disabled]="busyMemberIds().includes(member.userId)" (click)="remove.emit(member)">
+          {{ busyMemberIds().includes(member.userId) ? 'Saving…' : 'Remove' }}
+        </button>
       } @else {
         <span class="member-role">{{ member.role }}</span>
       }

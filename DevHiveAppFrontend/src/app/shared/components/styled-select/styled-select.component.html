@@ -1,0 +1,34 @@
+<div class="styled-select">
+  <button
+    type="button"
+    class="styled-select-trigger"
+    role="combobox"
+    [attr.id]="id()"
+    [attr.aria-label]="label()"
+    [attr.aria-haspopup]="'listbox'"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="id() + '-listbox'"
+    [attr.aria-activedescendant]="activeOptionId"
+    [disabled]="disabled()"
+    (click)="toggle()"
+    (keydown)="onKeydown($event)">
+    <span class="styled-select-value">{{ selectedOption?.label ?? placeholder() }}</span>
+    <span class="styled-select-chevron" aria-hidden="true"></span>
+  </button>
+  @if (open()) {
+    <div class="styled-select-menu" [attr.id]="id() + '-listbox'" role="listbox" [attr.aria-label]="label()">
+      @for (option of options(); track option.value; let index = $index) {
+        <div
+          class="styled-select-option"
+          [class.active]="index === activeIndex()"
+          [attr.id]="id() + '-option-' + index"
+          role="option"
+          [attr.aria-selected]="option.value === value()"
+          (mouseenter)="activeIndex.set(index)"
+          (click)="choose(option.value)">
+          {{ option.label }}
+        </div>
+      }
+    </div>
+  }
+</div>

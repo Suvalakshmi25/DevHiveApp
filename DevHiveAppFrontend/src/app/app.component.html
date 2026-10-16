@@ -1,5 +1,7 @@
-@if (auth.token()) {
+@if (!auth.initialized()) {
+  <main class="auth-loading" role="status">Restoring your session…</main>
+} @else if (auth.token()) {
   <app-dashboard />
 } @else {
-  <app-login />
+  <app-login [notice]="auth.logoutNotice()" />
 }

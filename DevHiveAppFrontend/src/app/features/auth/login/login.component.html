@@ -34,6 +34,9 @@
       @if (authMode === 'login' && errorMessage()) {
         <app-alert [message]="errorMessage()" />
       }
+      @if (authMode === 'login' && notice()) {
+        <app-alert [message]="notice()" />
+      }
       @if (authMode === 'login' && successMessage()) {
         <app-alert type="success" [message]="successMessage()" />
       }

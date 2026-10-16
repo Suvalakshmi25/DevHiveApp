@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { RegisterComponent } from '../register/register.component';
@@ -14,6 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class LoginComponent {
   private readonly authService = inject(AuthService);
 
+  readonly notice = input('');
   authMode: 'login' | 'register' = 'login';
   auth = { email: '', password: '' };
   readonly errorMessage = signal('');
